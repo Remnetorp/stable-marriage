@@ -21,26 +21,31 @@ public class StableMarriage{
         nPairs = scanner.nextInt();
         scanner.nextLine();
         String input;
-        ArrayList<ArrayList<Integer>> preferences = new ArrayList<>();
+        ArrayList<ArrayList<Integer>> menPreferences = new ArrayList<>(nPairs);
+        ArrayList<ArrayList<Integer>> womenPreferences = new ArrayList<>(nPairs);
 
-        while(scanner.hasNext()){
+        for(int i = 0; i < nPairs*2 ; i++){
             input = scanner.nextLine();
             String[] indexes = input.split(" ");
-            
+
+            int indexOfPerson = Integer.parseInt(indexes[0]);
+
             ArrayList<Integer> individualList = new ArrayList<>();
-            for(int i=0; i < indexes.length; i++){
-                individualList.add(Integer.parseInt(indexes[i]));
+            for(int j=1; j < indexes.length; j++){
+                individualList.add(Integer.parseInt(indexes[j]));
             }
-            preferences.add(individualList);
+
+            if(i < nPairs){
+                menPreferences.add(indexOfPerson-1,individualList);
+            }else{
+                womenPreferences.add(indexOfPerson-1, individualList);
+            }
+
         }
 
-        menPreferences = new ArrayList<>(preferences.subList(0, nPairs));
-        womenPreferences = new ArrayList<>(preferences.subList(nPairs, nPairs*2));
+
 
         // Print the preferences to make sure it works
-        for (ArrayList<Integer> preferenceList : preferences) {
-            System.out.println(preferenceList);
-        }
         System.out.println("\nWomen: \n");
         for (ArrayList<Integer> preferenceList : womenPreferences) {
             System.out.println(preferenceList);
