@@ -4,26 +4,28 @@ import java.util.ArrayList;
 import java.util.Stack;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeSet;
+import java.util.Set;
 
 
 public class StableMarriage{
     private int nPairs;
-    private ArrayList<ArrayList<Integer>> menPreferences;
-    private ArrayList<ArrayList<Integer>> womenPreferences;
+    private Map<Integer,ArrayList<Integer>> menPreferences;
+    private Map<Integer,ArrayList<Integer>> womenPreferences;
 
     /* 
      * Method readFile() takes in-files in the format where first line contains a single integer N (1 <= N <= 3000), the number
      * of students and companies. The each followig line after of the in-file contains the individuals preference lists.
      * I will add some example data in-files in the repository. 
      */
-    private void readFile(){
+    private void readFile(boolean output){
         Scanner scanner = new Scanner(System.in);
         nPairs = scanner.nextInt();
         
         scanner.nextLine();
         String input;
-        Map<Integer,ArrayList<Integer>> menPreferences = new HashMap<>();
-        Map<Integer,ArrayList<Integer>> womenPreferences = new HashMap<>();
+        menPreferences = new HashMap<>();
+        womenPreferences = new HashMap<>();
 
         while(scanner.hasNext()){
             input = scanner.nextLine();
@@ -37,67 +39,77 @@ public class StableMarriage{
             }
             if(!womenPreferences.containsKey(indexOfPerson)){
                 womenPreferences.put(indexOfPerson,individualList);
-            }else{
+            }else if (!menPreferences.containsKey(indexOfPerson)) {
                 menPreferences.put(indexOfPerson,individualList);
+            }else{
+                break;
             }
         }
 
         // Print the preferences to make sure it works
-        System.out.println("\nWomen:");
-        menPreferences.forEach((key, value) -> System.out.println(key + ": " + value));
-        System.out.println("\nMen: ");
-        womenPreferences.forEach((key, value) -> System.out.println(key + ": " + value));
+        if(output){
+            System.out.println("\nMen:");
+            menPreferences.forEach((key, value) -> System.out.println(key + ": " + value));
+            System.out.println("\nWomen: ");
+            womenPreferences.forEach((key, value) -> System.out.println(key + ": " + value));
+        }
         scanner.close();
     }
 
 
-     /**
+         /**
      * Started implementing the stable pairing by trying to follow the Gale-Shapley algorithm. 
      * Currently it gives a result, but seems to be incorrect.
      *
      */
-    private void algorithmGS(){
+    private void algorithmGS(boolean output){
+        ArrayList<Integer> p = new ArrayList<>(menPreferences.keySet());
         Map<Integer,Integer> pairs = new HashMap<>();
-        Map<Integer, ArrayList<Integer>> women = new HashMap<>(); 
-        Map<Integer, ArrayList<Integer>> men = new HashMap<>(); 
-        ArrayList<Integer> p = new ArrayList<>();
 
-        for (int i = 1; i<menPreferences.size()+1; i++){
-            men.put(i, menPreferences.get(i-1));
-            women.put(i, womenPreferences.get(i-1));
-            p.add(i);
-        }
-    
-
+ 
         while(!p.isEmpty()){
-            int man = p.remove(0);
-            ArrayList<Integer> womansPrefered = men.get(man);
-            int firstWoman = womansPrefered.remove(0);
-            if (pairs.containsKey(firstWoman)){
-                int currentMan = pairs.get(firstWoman);
-                ArrayList<Integer> herPreference = women.get(firstWoman);
-                if(herPreference.indexOf(man) < currentMan){
-                    pairs.put(firstWoman, man);
-                    p.add(currentMan);
-                }else{
-                    men.put(man, womansPrefered);
-                    p.add(man);
-                }
-            }else{
-                pairs.put(firstWoman, man);
-                men.put(man, womansPrefered);
-            }
+                    int man = p.remove(0);
+                    ArrayList<Integer> womansPrefered = menPreferences.get(man);
+                    
+                    //int firstWoman = womansPrefered.remove(0);
+
+                    for(int firstWoman : womansPrefered){
+                        if (!pairs.containsKey(firstWoman)){
+                            pairs.put(firstWoman, man);
+                            break;
+                        }else{
+                            int currentMan = pairs.get(firstWoman);
+                            ArrayList<Integer> herPreference = womenPreferences.get(firstWoman);
+                            if(herPreference.indexOf(man) < herPreference.indexOf(currentMan)){
+                                pairs.put(firstWoman, man);
+                                p.add(currentMan);
+                                break;
+                            }
+                        }
+                    }
         }
+        if (output){
+            pairs.forEach((key,value) -> {
+                System.out.println("Woman: " + key + ", Man: " + value);
+            }); 
+        }
+
         pairs.forEach((key,value) -> {
-            System.out.println("Man: " + value + ", Woman: " + key);
+            System.out.println(value);
         });
-    }
+    } 
 
 
     public static void main(String[] args){
         StableMarriage test = new StableMarriage();
-        test.readFile();
-        //test.algorithmGS();
+        boolean output = false;
+        for(String arg : args){
+            if (arg.equals("output")){
+                output = true;
+            }
+        }
+        test.readFile(output);
+        test.algorithmGS(output);
     }
 
 }
