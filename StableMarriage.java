@@ -19,12 +19,13 @@ public class StableMarriage{
     private void readFile(){
         Scanner scanner = new Scanner(System.in);
         nPairs = scanner.nextInt();
+        
         scanner.nextLine();
         String input;
-        ArrayList<ArrayList<Integer>> menPreferences = new ArrayList<>(nPairs);
-        ArrayList<ArrayList<Integer>> womenPreferences = new ArrayList<>(nPairs);
+        Map<Integer,ArrayList<Integer>> menPreferences = new HashMap<>();
+        Map<Integer,ArrayList<Integer>> womenPreferences = new HashMap<>();
 
-        for(int i = 0; i < nPairs*2 ; i++){
+        while(scanner.hasNext()){
             input = scanner.nextLine();
             String[] indexes = input.split(" ");
 
@@ -34,26 +35,18 @@ public class StableMarriage{
             for(int j=1; j < indexes.length; j++){
                 individualList.add(Integer.parseInt(indexes[j]));
             }
-
-            if(i < nPairs){
-                menPreferences.add(indexOfPerson-1,individualList);
+            if(!womenPreferences.containsKey(indexOfPerson)){
+                womenPreferences.put(indexOfPerson,individualList);
             }else{
-                womenPreferences.add(indexOfPerson-1, individualList);
+                menPreferences.put(indexOfPerson,individualList);
             }
-
         }
-
-
 
         // Print the preferences to make sure it works
-        System.out.println("\nWomen: \n");
-        for (ArrayList<Integer> preferenceList : womenPreferences) {
-            System.out.println(preferenceList);
-        }
-        System.out.println("Men: \n");
-        for (ArrayList<Integer> preferenceList : menPreferences) {
-            System.out.println(preferenceList);
-        }
+        System.out.println("\nWomen:");
+        menPreferences.forEach((key, value) -> System.out.println(key + ": " + value));
+        System.out.println("\nMen: ");
+        womenPreferences.forEach((key, value) -> System.out.println(key + ": " + value));
         scanner.close();
     }
 
@@ -104,7 +97,7 @@ public class StableMarriage{
     public static void main(String[] args){
         StableMarriage test = new StableMarriage();
         test.readFile();
-        test.algorithmGS();
+        //test.algorithmGS();
     }
 
 }
