@@ -2,8 +2,9 @@ Algorithm to find a stable matching, meaning that there does not exist two stude
 
 The input files are quite dependent on only sending in integers, and also the order of how they are sent in. The first interger on line 1 tells how many pairs there will be, so for instance 10 pairs would be 20 lines of 10 me nand 10 women. The lines after will first have one integer showing which index/number the person has and then have the number of integers of the opposite gender to show their preferences. The first occuring index/number will always be the woman and the second occurence will be the man.
 
-Run the program by either of the following lines, depending if you want extra output or not:
-java StableMarriage.java < data-input/input1.in
-java StableMarriage.java < data-input/input1.in output
+Run the program by first compiling and then either of the following lines, depending if you want extra output or not: <br>
+(1) $ javac StableMarriage.java
+(2) $ java StableMarriage.java < data-input/input1.in <br>
+(3) $ java StableMarriage.java < data-input/input1.in output <br>
 
 
