@@ -2,116 +2,132 @@ import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.LinkedList;
 
-
-
-public class StableMarriage{
+public class StableMarriage {
     private int nPairs;
-    private Map<Integer,ArrayList<Integer>> menPreferences;
-    private Map<Integer,ArrayList<Integer>> womenPreferences;
+    private Map<Integer, LinkedList<Integer>> menPreferences;
+    private Map<Integer, LinkedList<Integer>> womenPreferences;
 
     /**
-     * Method readFile() takes in-files in the format where first line contains a single integer N (1 <= N <= 3000), the number
-     * of students and companies. The each followig line after of the in-file contains the individuals preference lists.
-     * I will add some example data in-files in the repository. 
-     * 
-     * @param output Decideds if extra information should be printed out or not in the terminal.
+     * Method readFile() takes in-files in the format where first line contains a
+     * single integer N (1 <= N <= 3000), the number
+     * of students and companies. The each followig line after of the in-file
+     * contains the individuals preference lists. The first occurence
+     * of an index will always be the woman and the second occurence will be the
+     * man. There are some example data in-files in the repository.
      * 
      */
-    private void readFile(boolean output){
+    private void readFile() {
         Scanner scanner = new Scanner(System.in);
         nPairs = scanner.nextInt();
-        String input;
         menPreferences = new HashMap<>();
         womenPreferences = new HashMap<>();
 
-        for(int i=0; i < nPairs*2; i++){
+        for (int i = 0; i < nPairs * 2; i++) {
             int indexOfPerson = scanner.nextInt();
-
-            ArrayList<Integer> individualList = new ArrayList<>();
-            for(int j=0; j < nPairs; j++){
+            LinkedList<Integer> individualList = new LinkedList<>();
+            for (int j = 0; j < nPairs; j++) {
                 int index = scanner.nextInt();
-                if(!individualList.contains(index)){
-                    individualList.add(index);
-                }
+                individualList.add(index);
             }
-            if(!womenPreferences.containsKey(indexOfPerson)){
-                womenPreferences.put(indexOfPerson,individualList);
-            }else if (!menPreferences.containsKey(indexOfPerson)) {
-                menPreferences.put(indexOfPerson,individualList);
-            }else{
+            if (!womenPreferences.containsKey(indexOfPerson)) {
+                womenPreferences.put(indexOfPerson, individualList);
+            } else if (!menPreferences.containsKey(indexOfPerson)) {
+                menPreferences.put(indexOfPerson, individualList);
+            } else {
                 break;
             }
-        } 
-
-        // Print the preferences to make sure it works, call it by sending "output" in the argument when running from terminal.
-        if(output){
-            System.out.println("\nMen:");
-            menPreferences.forEach((key, value) -> System.out.println(key + ": " + value));
-            System.out.println("\nWomen: ");
-            womenPreferences.forEach((key, value) -> System.out.println(key + ": " + value));
-        } 
+        }
         scanner.close();
     }
 
-
     /**
-     * Started implementing the stable pairing by trying to follow the Gale-Shapley algorithm. 
-     * Currently it gives a result, but seems to be incorrect.
+     * AlgorithmGS is a method performing the Gale-shapley algorithm, it finds a
+     * stable pairing of the men and women provided
+     * from the input data file. It takes the preference lists into consideration
+     * and find best matching.
      *
-     * @param output Decideds if extra information should be printed out or not in the terminal.
+     * @return A map containing the stable pairs of the women and the men, the keys
+     *         are the women and the values are the men.
      * 
      */
-    private void algorithmGS(boolean output){
-        ArrayList<Integer> p = new ArrayList<>(menPreferences.keySet());
-        Map<Integer,Integer> pairs = new HashMap<>();
+    private Map<Integer, Integer> algorithmGS() {
+        LinkedList<Integer> p = new LinkedList<>(menPreferences.keySet());
+        Map<Integer, Integer> pairs = new HashMap<>();
 
-        
-        //Time compexity n-men in p
-        while(!p.isEmpty()){
-                    int man = p.remove(0);
-                    ArrayList<Integer> womansPrefered = menPreferences.get(man);
-
-                    //Time compexity n-women in preferences => in total n^2.
-                    for(int firstWoman : womansPrefered){
-                        if (!pairs.containsKey(firstWoman)){
-                            pairs.put(firstWoman, man);
-                            break;
-                        }else{
-                            int currentMan = pairs.get(firstWoman);
-                            ArrayList<Integer> herPreference = womenPreferences.get(firstWoman);
-                            if(herPreference.indexOf(man) < herPreference.indexOf(currentMan)){
-                                pairs.put(firstWoman, man);
-                                p.add(currentMan);
-                                break;
-                            }
-                        }
-                    }
+        while (!p.isEmpty()) {
+            int man = p.poll();
+            int woman = menPreferences.get(man).poll();
+            if (!pairs.containsKey(woman)) {
+                pairs.put(woman, man);
+            } else {
+                int currentMan = pairs.get(woman);
+                LinkedList<Integer> herPreference = womenPreferences.get(woman);
+                int indexMan = herPreference.indexOf(man);
+                int indexCurrentMan = herPreference.indexOf(currentMan);
+                if (indexMan < indexCurrentMan) {
+                    pairs.put(woman, man);
+                    womenPreferences.get(woman).remove(indexCurrentMan);
+                    p.push(currentMan);
+                } else {
+                    p.push(man);
+                    womenPreferences.get(woman).remove(indexMan);
+                }
+            }
         }
+        return pairs;
+    }
 
-        //prints out extra information if "output" was sent in the arg when program runned.
-        if (output){
-            pairs.forEach((key,value) -> {
-                System.out.println("Woman: " + key + ", Man: " + value);
-            }); 
-        }
+    public static void main(String[] args) {
+        StableMarriage test = new StableMarriage();
 
-        pairs.forEach((key,value) -> {
+        long time0 = System.currentTimeMillis();
+        test.readFile();
+        long time1 = System.currentTimeMillis();
+        Map<Integer, Integer> pairs = test.algorithmGS();
+        long time2 = System.currentTimeMillis();
+
+        pairs.forEach((key, value) -> {
             System.out.println(value);
         });
-    } 
 
+        long readTime = (time1 - time0);
+        long algorithmTime = (time2 - time1);
 
-    public static void main(String[] args){
-        StableMarriage test = new StableMarriage();
         boolean output = false;
-        for(String arg : args){
-            if (arg.equals("output")){
+        for (String arg : args) {
+            if (arg.equals("output")) {
                 output = true;
             }
         }
-        test.readFile(output);
-        test.algorithmGS(output);
+        if (output) {
+            test.printInformation(readTime, algorithmTime, pairs);
+        }
     }
 
+    /**
+     * printInformation method sole reason is to provide extra information in the
+     * output to understand the result.
+     *
+     * @param readTime      The time in milliseconds it took to perform the read
+     *                      method.
+     * @param algorithmTime The time in milliseconds it took to perform the
+     *                      algorithm method.
+     * @param pairs         A map containing the stable pairs.
+     * 
+     */
+    public void printInformation(long readTime, long algorithmTime, Map<Integer, Integer> pairs) {
+        System.out.println("Amount of pairs with men and women: " + nPairs);
+        for (int i = 1; i < (1 + nPairs / 2); i++) {
+            System.out.println("Man " + i + "has preferences: " + menPreferences.get(i));
+            System.out.println("Woman " + i + "has preferences: " + womenPreferences.get(i));
+        }
+        pairs.forEach((key, value) -> {
+            System.out.println("Woman " + key + " is paired with man " + value);
+        });
+        System.out.println("Milliseconds reading input: " + readTime);
+        System.out.println("Milliseconds performing algorithm: " + algorithmTime);
+        System.out.println("Total time in milliseconds: " + (readTime + algorithmTime));
+    }
 }
