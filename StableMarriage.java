@@ -7,7 +7,7 @@ import java.util.LinkedList;
 public class StableMarriage {
     private int nPairs;
     private Map<Integer, LinkedList<Integer>> menPreferences;
-    private Map<Integer, LinkedList<Integer>> womenPreferences;
+    private Map<Integer, int[]> womenPreferences;
 
     /**
      * Method readFile() takes in-files in the format where first line contains a
@@ -21,22 +21,33 @@ public class StableMarriage {
     private void readFile() {
         Scanner scanner = new Scanner(System.in);
         nPairs = scanner.nextInt();
+        LinkedList<Integer> individualList;
+        int[] individList;
         menPreferences = new HashMap<>();
         womenPreferences = new HashMap<>();
 
         for (int i = 0; i < nPairs * 2; i++) {
+            individList = new int[nPairs + 1];
             int indexOfPerson = scanner.nextInt();
-            LinkedList<Integer> individualList = new LinkedList<>();
-            for (int j = 0; j < nPairs; j++) {
-                int index = scanner.nextInt();
-                individualList.add(index);
-            }
-            if (!womenPreferences.containsKey(indexOfPerson)) {
-                womenPreferences.put(indexOfPerson, individualList);
-            } else if (!menPreferences.containsKey(indexOfPerson)) {
-                menPreferences.put(indexOfPerson, individualList);
+            individualList = new LinkedList<>();
+            boolean woman;
+            if (womenPreferences.containsKey(indexOfPerson)) {
+                woman = false;
             } else {
-                break;
+                woman = true;
+            }
+            for (int j = 1; j < nPairs + 1; j++) {
+                int index = scanner.nextInt();
+                if (woman) {
+                    individList[index] = j;
+                } else {
+                    individualList.add(index);
+                }
+            }
+            if (woman) {
+                womenPreferences.put(indexOfPerson, individList);
+            } else {
+                menPreferences.put(indexOfPerson, individualList);
             }
         }
         scanner.close();
@@ -63,16 +74,14 @@ public class StableMarriage {
                 pairs.put(woman, man);
             } else {
                 int currentMan = pairs.get(woman);
-                LinkedList<Integer> herPreference = womenPreferences.get(woman);
-                int indexMan = herPreference.indexOf(man);
-                int indexCurrentMan = herPreference.indexOf(currentMan);
-                if (indexMan < indexCurrentMan) {
+                int[] herPreference = womenPreferences.get(woman);
+                int preferenceMan = herPreference[man];
+                int preferenceCurrentMan = herPreference[currentMan];
+                if (preferenceMan < preferenceCurrentMan) {
                     pairs.put(woman, man);
-                    womenPreferences.get(woman).remove(indexCurrentMan);
                     p.push(currentMan);
                 } else {
                     p.push(man);
-                    womenPreferences.get(woman).remove(indexMan);
                 }
             }
         }
